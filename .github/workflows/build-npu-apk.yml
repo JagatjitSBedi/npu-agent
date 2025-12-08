@@ -18,15 +18,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew || true
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Wrapper (if missing)
+      - name: Generate wrapper if missing
         run: |
-          if [ ! -f ./gradlew ]; then
-            ./gradlew wrapper || ./gradlew wrapper || true
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version=8.7
           fi
 
       - name: Build APK
