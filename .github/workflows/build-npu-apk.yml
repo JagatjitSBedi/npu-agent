@@ -34,10 +34,11 @@ jobs:
           which aapt 2>/dev/null || echo "aapt not found in PATH"
 
       - name: Build APK
-        run: ./gradlew assembleDebug -x lint --no-daemon --max-workers=2
+        run: ./gradlew assembleDebug -x lint --no-daemon --max-workers=2 --info --stacktrace
         timeout-minutes: 10
 
       - name: Upload APK if built
         if: always()
         run: |
           find app/build/outputs/apk -name "*.apk" -ls 2>/dev/null || echo "No APK found"
+
