@@ -7,8 +7,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -19,26 +19,51 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
+          cache-dependency-path: |
+            **/gradle/wrapper/gradle-wrapper.properties
+            **/build.gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Check Java version
-        run: java -version
-
-      - name: Check for Android SDK
+      - name: Download Gradle wrapper (clean)
         run: |
-          echo "Android SDK locations:"
-          ls -la $ANDROID_HOME/ 2>/dev/null || echo "ANDROID_HOME not found"
-          ls -la $ANDROID_SDK_ROOT/ 2>/dev/null || echo "ANDROID_SDK_ROOT not found"
-          which aapt 2>/dev/null || echo "aapt not found in PATH"
+          chmod +x ./gradlew || true
+          ./gradlew wrapper --gradle-version 8.9 --distribution-type bin
 
-      - name: Build APK
-        run: ./gradlew assembleDebug -x lint --no-daemon --max-workers=2 --info --stacktrace
-        timeout-minutes: 10
+      - name: Fix gradlew permissions
+        run: chmod +x ./gradlew
 
-      - name: Upload APK if built
+      - name: Verify Java & Gradle
+        run: |
+          java -version
+          ./gradlew --version
+
+      - name: Clean build cache
+        run: ./gradlew clean --no-daemon
+
+      - name: Build debug APK
+        run: |
+          ./gradlew :app:assembleDebug \
+            --no-daemon \
+            --max-workers=2 \
+            --build-cache \
+            --stacktrace \
+            -Dorg.gradle.jvmargs="-Xmx3g"
+
+      - name: Check APK output
+        run: |
+          find app/build/outputs/apk -name "*.apk" -ls 2>/dev/null || echo "No APK found yet"
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 5
+
+      - name: APK build summary
         if: always()
         run: |
-          find app/build/outputs/apk -name "*.apk" -ls 2>/dev/null || echo "No APK found"
-
+          echo "Build Status: ${{ job.status }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
