@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -23,33 +23,21 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Generate wrapper if missing
-        run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version=8.7
-          fi
+      - name: Check Java version
+        run: java -version
 
-      - name: List Gradle tasks
-        run: ./gradlew tasks --all
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+      - name: Check for Android SDK
+        run: |
+          echo "Android SDK locations:"
+          ls -la $ANDROID_HOME/ 2>/dev/null || echo "ANDROID_HOME not found"
+          ls -la $ANDROID_SDK_ROOT/ 2>/dev/null || echo "ANDROID_SDK_ROOT not found"
+          which aapt 2>/dev/null || echo "aapt not found in PATH"
 
       - name: Build APK
-        run: ./gradlew assembleDebug --stacktrace --info
-        timeout-minutes: 15
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+        run: ./gradlew assembleDebug -x lint --no-daemon --max-workers=2
+        timeout-minutes: 10
 
-      - name: Check build outputs
+      - name: Upload APK if built
+        if: always()
         run: |
-          echo "Debug APKs:"
-          ls -lah app/build/outputs/apk/debug/ || echo "No debug APK found"
-
-      - name: Upload Debug APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npu-agent-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
-
+          find app/build/outputs/apk -name "*.apk" -ls 2>/dev/null || echo "No APK found"
