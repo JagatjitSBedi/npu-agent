@@ -3,67 +3,23 @@ name: Build NPU APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
-          cache-dependency-path: |
-            **/gradle/wrapper/gradle-wrapper.properties
-            **/build.gradle
+          java-version: 21
 
-      - name: Download Gradle wrapper (clean)
-        run: |
-          chmod +x ./gradlew || true
-          ./gradlew wrapper --gradle-version 8.9 --distribution-type bin
-
-      - name: Fix gradlew permissions
-        run: chmod +x ./gradlew
-
-      - name: Verify Java & Gradle
-        run: |
-          java -version
-          ./gradlew --version
-
-      - name: Clean build cache
-        run: ./gradlew clean --no-daemon
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build debug APK
-        run: |
-          ./gradlew :app:assembleDebug \
-            --no-daemon \
-            --max-workers=2 \
-            --build-cache \
-            --stacktrace \
-            -Dorg.gradle.jvmargs="-Xmx3g"
-
-      - name: Check APK output
-        run: |
-          find app/build/outputs/apk -name "*.apk" -ls 2>/dev/null || echo "No APK found yet"
-
-      - name: Upload debug APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 5
-
-      - name: APK build summary
-        if: always()
-        run: |
-          echo "Build Status: ${{ job.status }}"
-          echo "Run ID: ${{ github.run_id }}"
-          echo "Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: gradle assembleDebug
