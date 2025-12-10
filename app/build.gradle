@@ -1,51 +1,42 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    // your other plugins...
 }
 
 android {
-    namespace 'ai.npuagent'
-    compileSdk 34
+    // your existing android config...
 
-    defaultConfig {
-        applicationId "ai.npuagent"
-        minSdk 26
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation "com.google.android.material:material:1.12.0"
-}
-
-android {
-    // ... your existing android {} content above ...
-
+    // Only apply the Termux AAPT2 override when NOT in CI
     def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
                         project.property("ci.ignoreAapt2Override") == "true"
 
-    if (ciIgnoreAapt2) {
-        // In CI: clear the Termux-specific override so AGP uses its own AAPT2
-        project.ext.remove("android.aapt2FromMavenOverride")
+    if (!ciIgnoreAapt2) {
+        // keep using your existing setting from gradle.properties:
+        // android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2
+        // nothing else needed; Gradle reads the property automatically
+    }
+}
+
+// keep your existing dependencies {} etc. here
+
+gradle.projectsEvaluated {
+    // Detect if CI wants to ignore the Termux AAPT2 override
+    def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
+                        project.property("ci.ignoreAapt2Override") == "true"
+
+    // Path where your Termux aapt2 lives
+    def termuxAapt2Path = "/data/data/com.termux/files/usr/bin/aapt2"
+    def termuxAapt2 = file(termuxAapt2Path)
+
+    if (!ciIgnoreAapt2 && termuxAapt2.exists()) {
+        // Local Termux build with working aapt2: Gradle will honor
+        // android.aapt2FromMavenOverride from gradle.properties
+        println "Using Termux AAPT2 at ${termuxAapt2Path}"
+    } else {
+        // CI or Termux aapt2 missing: let Android Gradle Plugin resolve AAPT2
+        if (project.hasProperty("android.aapt2FromMavenOverride")) {
+            System.setProperty("android.aapt2FromMavenOverride", "")
+            println "Not using Termux AAPT2; letting Android Gradle Plugin resolve AAPT2."
+        }
     }
 }
