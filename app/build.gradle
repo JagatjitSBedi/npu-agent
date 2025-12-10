@@ -40,3 +40,13 @@ gradle.projectsEvaluated {
         }
     }
 }
+
+android {
+    // Ensure compileSdk is set for both local and CI builds
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 34
+    }
+}
