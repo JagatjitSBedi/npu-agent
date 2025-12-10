@@ -42,19 +42,18 @@ class HttpServerService : Service() {
                 val reader = sock.getInputStream().bufferedReader()
                 val line = reader.readLine() ?: return@use
                 
-                // Parse HTTP request line: "GET /infer?prompt=... HTTP/1.1"
                 val parts = line.split(" ")
                 if (parts.size < 2) return@use
                 
                 val path = parts[1]
                 val response = when {
-                    path == "/" -> buildResponse(200, "NPUAgent HTTP bridge alive
-")
+                    path == "/" -> buildResponse(200, "NPUAgent HTTP bridge alive")
                     path.startsWith("/infer?") -> {
                         val query = path.substringAfter("?")
-                        val params = query.split("&").associate {
+                        val params = mutableMapOf<String, String>()
+                        query.split("&").forEach {
                             val (k, v) = it.split("=", limit = 2)
-                            k to URLDecoder.decode(v, "UTF-8")
+                            params[k] = URLDecoder.decode(v, "UTF-8")
                         }
                         val prompt = params["prompt"] ?: ""
                         
@@ -62,11 +61,14 @@ class HttpServerService : Service() {
                         val result = NpuBridge.executePrompt(prompt)
                         Log.d(TAG, "NPU result: $result")
                         
-                        buildResponse(200, """{"status":"ok","result":"$result"}""")
+                        val jsonBody = "{"status":"ok","result":"$result"}"
+                        buildResponse(200, jsonBody)
                     }
-                    path == "/status" -> buildResponse(200, """{"status":"running","timestamp":${System.currentTimeMillis()}}""")
-                    else -> buildResponse(404, "Not found
-")
+                    path == "/status" -> {
+                        val ts = System.currentTimeMillis()
+                        buildResponse(200, "{"status":"running","timestamp":$ts}")
+                    }
+                    else -> buildResponse(404, "Not found")
                 }
                 
                 sock.getOutputStream().write(response.toByteArray())
@@ -78,14 +80,14 @@ class HttpServerService : Service() {
 
     private fun buildResponse(code: Int, body: String): String {
         val status = if (code == 200) "OK" else "Not Found"
-        return """
-            HTTP/1.1 $code $status
-            Content-Type: application/json
-            Content-Length: ${body.toByteArray().size}
-            Connection: close
-            
-            $body
-        """.trimIndent()
+        val codeStr = code.toString()
+        val contentLen = body.toByteArray().size
+        return "HTTP/1.1 $codeStr $status
+Content-Type: application/json
+Content-Length: $contentLen
+Connection: close
+
+$body"
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
