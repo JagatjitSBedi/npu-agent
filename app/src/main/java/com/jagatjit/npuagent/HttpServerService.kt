@@ -82,12 +82,20 @@ class HttpServerService : Service() {
         val status = if (code == 200) "OK" else "Not Found"
         val codeStr = code.toString()
         val contentLen = body.toByteArray().size
-        return "HTTP/1.1 $codeStr $status
-Content-Type: application/json
-Content-Length: $contentLen
-Connection: close
-
-$body"
+        
+        val sb = StringBuilder()
+        sb.append("HTTP/1.1 ").append(codeStr).append(" ").append(status).append("
+")
+        sb.append("Content-Type: application/json
+")
+        sb.append("Content-Length: ").append(contentLen).append("
+")
+        sb.append("Connection: close
+")
+        sb.append("
+")
+        sb.append(body)
+        return sb.toString()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
