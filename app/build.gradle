@@ -1,62 +1,47 @@
 plugins {
     id 'com.android.application'
-    // your other plugins...
+    id 'org.jetbrains.kotlin.android' version '1.9.10'
 }
 
 android {
-    // your existing android config...
-
-    // Only apply the Termux AAPT2 override when NOT in CI
-    def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
-                        project.property("ci.ignoreAapt2Override") == "true"
-
-    if (!ciIgnoreAapt2) {
-        // keep using your existing setting from gradle.properties:
-        // android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2
-        // nothing else needed; Gradle reads the property automatically
-    }
-}
-
-// keep your existing dependencies {} etc. here
-
-gradle.projectsEvaluated {
-    // Detect if CI wants to ignore the Termux AAPT2 override
-    def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
-                        project.property("ci.ignoreAapt2Override") == "true"
-
-    // Path where your Termux aapt2 lives
-    def termuxAapt2Path = "/data/data/com.termux/files/usr/bin/aapt2"
-    def termuxAapt2 = file(termuxAapt2Path)
-
-    if (!ciIgnoreAapt2 && termuxAapt2.exists()) {
-        // Local Termux build with working aapt2: Gradle will honor
-        // android.aapt2FromMavenOverride from gradle.properties
-        println "Using Termux AAPT2 at ${termuxAapt2Path}"
-    } else {
-        // CI or Termux aapt2 missing: let Android Gradle Plugin resolve AAPT2
-        if (project.hasProperty("android.aapt2FromMavenOverride")) {
-            System.setProperty("android.aapt2FromMavenOverride", "")
-            println "Not using Termux AAPT2; letting Android Gradle Plugin resolve AAPT2."
-        }
-    }
-}
-
-android {
-    // Ensure compileSdk is set for both local and CI builds
+    namespace "com.jagatjit.npuagent"
     compileSdk 34
 
     defaultConfig {
+        applicationId "com.jagatjit.npuagent"
         minSdk 24
         targetSdk 34
+        versionCode 1
+        versionName "0.1"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
-android {
-    // Namespace required by Android Gradle Plugin 8+
-    namespace "com.jagatjit.npuagent"
+gradle.projectsEvaluated {
+    val ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
+            project.property("ci.ignoreAapt2Override") == "true"
+    val termuxAapt2Path = "/data/data/com.termux/files/usr/bin/aapt2"
+    val termuxAapt2 = file(termuxAapt2Path)
+
+    if (!ciIgnoreAapt2 && termuxAapt2.exists()) {
+        println("Using Termux AAPT2 at $termuxAapt2Path")
+    } else if (project.hasProperty("android.aapt2FromMavenOverride")) {
+        System.setProperty("android.aapt2FromMavenOverride", "")
+        println("Not using Termux AAPT2; letting Android Gradle Plugin resolve AAPT2.")
+    }
 }
 
 dependencies {
-    // Material Components for Material3 themes and color attributes
     implementation "com.google.android.material:material:1.12.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.core:core-ktx:1.13.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.10"
 }
