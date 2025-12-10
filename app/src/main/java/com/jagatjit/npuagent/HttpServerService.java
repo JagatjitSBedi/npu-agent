@@ -97,14 +97,39 @@ public class HttpServerService extends Service {
     private String buildResponse(int code, String body) {
         String statusText = (code == 200) ? "OK" : "Not Found";
         StringBuilder response = new StringBuilder();
-        response.append("HTTP/1.1 ").append(code).append(" ").append(statusText).append("\\r\
+        response.append("HTTP/1.1 ").append(code).append(" ").append(statusText).append("
 ");
-        response.append("Content-Type: application/json\\r\
+        response.append("Content-Type: application/json
 ");
-        response.append("Content-Length: ").append(body.length()).append("\\r\
+        response.append("Content-Length: ").append(body.length()).append("
 ");
-        response.append("Connection: close\\r\
-\\r\
+        response.append("Connection: close
+
+");
+        response.append(body);
+        return response.toString();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        running = false;
+        executor.shutdownNow();
+        super.onDestroy();
+    }
+}
+        response.append("HTTP/1.1 ").append(code).append(" ").append(statusText).append("
+");
+        response.append("Content-Type: application/json
+");
+        response.append("Content-Length: ").append(body.length()).append("
+");
+        response.append("Connection: close
+
 ");
         response.append(body);
         return response.toString();
