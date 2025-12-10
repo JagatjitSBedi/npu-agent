@@ -26,10 +26,10 @@ android {
 }
 
 gradle.projectsEvaluated {
-    val ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
+    def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
             project.property("ci.ignoreAapt2Override") == "true"
-    val termuxAapt2Path = "/data/data/com.termux/files/usr/bin/aapt2"
-    val termuxAapt2 = file(termuxAapt2Path)
+    def termuxAapt2Path = "/data/data/com.termux/files/usr/bin/aapt2"
+    def termuxAapt2 = file(termuxAapt2Path)
 
     if (!ciIgnoreAapt2 && termuxAapt2.exists()) {
         println("Using Termux AAPT2 at $termuxAapt2Path")
