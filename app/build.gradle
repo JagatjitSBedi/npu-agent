@@ -37,3 +37,15 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
 }
+
+android {
+    // ... your existing android {} content above ...
+
+    def ciIgnoreAapt2 = project.hasProperty("ci.ignoreAapt2Override") &&
+                        project.property("ci.ignoreAapt2Override") == "true"
+
+    if (ciIgnoreAapt2) {
+        // In CI: clear the Termux-specific override so AGP uses its own AAPT2
+        project.ext.remove("android.aapt2FromMavenOverride")
+    }
+}

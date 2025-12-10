@@ -22,4 +22,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build debug APK (no tests)
-        run: gradle assembleDebug -x test
+        run: gradle assembleDebug -x test -Pci.ignoreAapt2Override=true
