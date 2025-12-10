@@ -70,7 +70,6 @@ public class HttpServerService extends Service {
                 String prompt = params.getOrDefault("prompt", "");
                 Log.d(TAG, "Received prompt: " + prompt);
                 String result = NpuBridge.executePrompt(prompt);
-
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append(""status":"ok",");
@@ -98,14 +97,14 @@ public class HttpServerService extends Service {
     private String buildResponse(int code, String body) {
         String statusText = (code == 200) ? "OK" : "Not Found";
         StringBuilder response = new StringBuilder();
-        response.append("HTTP/1.1 ").append(code).append(" ").append(statusText).append("
+        response.append("HTTP/1.1 ").append(code).append(" ").append(statusText).append("\\r\
 ");
-        response.append("Content-Type: application/json
+        response.append("Content-Type: application/json\\r\
 ");
-        response.append("Content-Length: ").append(body.length()).append("
+        response.append("Content-Length: ").append(body.length()).append("\\r\
 ");
-        response.append("Connection: close
-
+        response.append("Connection: close\\r\
+\\r\
 ");
         response.append(body);
         return response.toString();
