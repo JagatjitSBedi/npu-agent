@@ -55,3 +55,8 @@ android {
     // Namespace required by Android Gradle Plugin 8+
     namespace "com.jagatjit.npuagent"
 }
+
+dependencies {
+    // Material Components for Material3 themes and color attributes
+    implementation "com.google.android.material:material:1.12.0"
+}
