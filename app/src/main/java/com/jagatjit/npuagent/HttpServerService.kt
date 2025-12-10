@@ -57,16 +57,16 @@ class HttpServerService : Service() {
                         }
                         val prompt = params["prompt"] ?: ""
                         
-                        Log.d(TAG, "Received prompt: $prompt")
+                        Log.d(TAG, "Received prompt: " + prompt)
                         val result = NpuBridge.executePrompt(prompt)
-                        Log.d(TAG, "NPU result: $result")
+                        Log.d(TAG, "NPU result: " + result)
                         
-                        val jsonBody = "{"status":"ok","result":"$result"}"
+                        val jsonBody = "{"status":"ok","result":"" + result + ""}"
                         buildResponse(200, jsonBody)
                     }
                     path == "/status" -> {
                         val ts = System.currentTimeMillis()
-                        buildResponse(200, "{"status":"running","timestamp":$ts}")
+                        buildResponse(200, "{"status":"running","timestamp":" + ts + "}")
                     }
                     else -> buildResponse(404, "Not found")
                 }
@@ -79,23 +79,19 @@ class HttpServerService : Service() {
     }
 
     private fun buildResponse(code: Int, body: String): String {
-        val status = if (code == 200) "OK" else "Not Found"
-        val codeStr = code.toString()
-        val contentLen = body.toByteArray().size
-        
-        val sb = StringBuilder()
-        sb.append("HTTP/1.1 ").append(codeStr).append(" ").append(status).append("
-")
-        sb.append("Content-Type: application/json
-")
-        sb.append("Content-Length: ").append(contentLen).append("
-")
-        sb.append("Connection: close
-")
-        sb.append("
-")
-        sb.append(body)
-        return sb.toString()
+        val statusText = if (code == 200) "OK" else "Not Found"
+        val contentLen = body.length
+        val line1 = "HTTP/1.1 $code $statusText"
+        val line2 = "Content-Type: application/json"
+        val line3 = "Content-Length: $contentLen"
+        val line4 = "Connection: close"
+        val blank = ""
+        return line1 + "
+" + line2 + "
+" + line3 + "
+" + line4 + "
+" + blank + "
+" + body
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
