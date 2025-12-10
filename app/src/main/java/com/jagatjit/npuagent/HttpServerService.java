@@ -73,16 +73,16 @@ public class HttpServerService extends Service {
 
                 StringBuilder json = new StringBuilder();
                 json.append("{");
-                json.append(""status":"ok",");
-                json.append(""result":"").append(result).append(""");
+                json.append("\"status\":\"ok\",");
+                json.append("\"result\":\"").append(result).append("\"");
                 json.append("}");
                 response = buildResponse(200, json.toString());
             } else if (path.equals("/status")) {
                 long ts = System.currentTimeMillis();
                 StringBuilder json = new StringBuilder();
                 json.append("{");
-                json.append(""status":"running",");
-                json.append(""timestamp":").append(ts);
+                json.append("\"status\":\"running\",");
+                json.append("\"timestamp\":").append(ts);
                 json.append("}");
                 response = buildResponse(200, json.toString());
             } else {
@@ -102,9 +102,12 @@ public class HttpServerService extends Service {
 ");
         response.append("Content-Type: application/json
 ");
-        response.append("Content-Length: ").append(body.length()).append("
+        response.append("Content-Length: ").append(body.length()).append("\\r\
 ");
-        response.append("Connection: close
+");
+        response.append("Connection: close\\r\
+\\r\
+");
 
 ");
         response.append(body);
