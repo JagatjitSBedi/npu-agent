@@ -70,12 +70,21 @@ public class HttpServerService extends Service {
                 String prompt = params.getOrDefault("prompt", "");
                 Log.d(TAG, "Received prompt: " + prompt);
                 String result = NpuBridge.executePrompt(prompt);
-                String json = "{"status":"ok","result":"" + result + ""}";
-                response = buildResponse(200, json);
+
+                StringBuilder json = new StringBuilder();
+                json.append("{");
+                json.append(""status":"ok",");
+                json.append(""result":"").append(result).append(""");
+                json.append("}");
+                response = buildResponse(200, json.toString());
             } else if (path.equals("/status")) {
                 long ts = System.currentTimeMillis();
-                String json = "{"status":"running","timestamp":" + ts + "}";
-                response = buildResponse(200, json);
+                StringBuilder json = new StringBuilder();
+                json.append("{");
+                json.append(""status":"running",");
+                json.append(""timestamp":").append(ts);
+                json.append("}");
+                response = buildResponse(200, json.toString());
             } else {
                 response = buildResponse(404, "Not found");
             }
