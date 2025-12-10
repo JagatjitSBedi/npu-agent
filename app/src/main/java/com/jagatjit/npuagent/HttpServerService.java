@@ -70,11 +70,18 @@ public class HttpServerService extends Service {
                 Log.d(TAG, "Received prompt: " + prompt);
                 String result = NpuBridge.executePrompt(prompt);
                 Log.d(TAG, "NPU result: " + result);
-                String jsonBody = "{"status":"ok","result":"" + result + ""}";
-                response = buildResponse(200, jsonBody);
+                String json = "{";
+                json = json + ""status":"ok",";
+                json = json + ""result":"" + result + """;
+                json = json + "}";
+                response = buildResponse(200, json);
             } else if (path.equals("/status")) {
                 long ts = System.currentTimeMillis();
-                response = buildResponse(200, "{"status":"running","timestamp":" + ts + "}");
+                String json = "{";
+                json = json + ""status":"running",";
+                json = json + ""timestamp":" + ts;
+                json = json + "}";
+                response = buildResponse(200, json);
             } else {
                 response = buildResponse(404, "Not found");
             }
@@ -88,16 +95,17 @@ public class HttpServerService extends Service {
     private String buildResponse(int code, String body) {
         String statusText = (code == 200) ? "OK" : "Not Found";
         int contentLen = body.length();
-        return "HTTP/1.1 " + code + " " + statusText + "
-" +
-               "Content-Type: application/json
-" +
-               "Content-Length: " + contentLen + "
-" +
-               "Connection: close
-
-" +
-               body;
+        String line1 = "HTTP/1.1 " + code + " " + statusText;
+        String line2 = "Content-Type: application/json";
+        String line3 = "Content-Length: " + contentLen;
+        String line4 = "Connection: close";
+        String blank = "";
+        return line1 + "
+" + line2 + "
+" + line3 + "
+" + line4 + "
+" + blank + "
+" + body;
     }
 
     @Override
