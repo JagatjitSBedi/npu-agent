@@ -50,3 +50,8 @@ android {
         targetSdk 34
     }
 }
+
+android {
+    // Namespace required by Android Gradle Plugin 8+
+    namespace "com.jagatjit.npuagent"
+}
