@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d("MainActivity", "Launching NPUAgent")
         
-        startService(Intent(this, HttpServerService::class.java))
+        // startService(Intent(this, HttpServerService::class.java))
         Log.d("MainActivity", "HTTP server started")
         
         finish()
