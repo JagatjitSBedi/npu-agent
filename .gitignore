@@ -1,2 +1,20 @@
-gradle-*.zip
-gradle-*.zip
+# Gradle
+.gradle/
+**/build/
+
+# Local config
+local.properties
+
+# Logs
+*.log
+
+# Android Studio
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# APKs & metadata
+*.apk
+output-metadata.json
